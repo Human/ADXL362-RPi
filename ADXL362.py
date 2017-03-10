@@ -10,15 +10,21 @@
 # spidev is the Raspberry Pi spi communication library
 import spidev
 import time
-import RPi.GPIO as gpio
 
 class ADXL362:
 
-    def __init__(self):
+    def __init__(self, device=0, ce_pin=0):
+        """
+        device: the SPI device (often 0)
+
+        ce_pin: pass 0 for CE0, 1 for CE1, etc.
+
+        device and ce_pin map to device file /dev/spidev{device}.{ce_pin}
+        """
 
         # init spi for communication
         self.spi = spidev.SpiDev()
-        self.spi.open(0,0)
+        self.spi.open(device, ce_pin) # (x,0) == CE0, (x,1) == CE1
 
         # Set clock phase and polarity to default
         self.spi.mode = 0b00 
@@ -27,7 +33,7 @@ class ADXL362:
         self.spi_write_reg(0x1F, 0x52)
         time.sleep(.01)
 
-        print 'Soft reset'
+        print('Soft reset')
     
     def spi_write_reg(self, address, value):
         ''' Write value to address
@@ -103,12 +109,13 @@ class ADXL362:
             Returns:
                 - Tuple with x, y, z, and temperature data
         '''
-
+        self.spi.cshigh = False
         x = self.read_x()
         y = self.read_y()
         z = self.read_z()
         temp = self.read_temp()
-        
+
+        self.spi.cshigh = True
         return (x, y, z, temp)
         
     def spi_read_two(self, address):
@@ -156,9 +163,9 @@ class ADXL362:
         return values[2:]
 
     def twos_comp(self,val, bits):
-       ''' Returns two's complement of value given a number of bits
-       '''
-        if( (val&(1<<(bits-1))) != 0 ):
-             val = val - (1<<bits)
+        """ Returns two's complement of value given a number of bits
+        """
+        if val&(1<<(bits-1)) != 0:
+            val = val - (1<<bits)
         return val
 
