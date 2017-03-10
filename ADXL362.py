@@ -10,7 +10,6 @@
 # spidev is the Raspberry Pi spi communication library
 import spidev
 import time
-import RPi.GPIO as gpio
 
 class ADXL362:
 
@@ -27,7 +26,7 @@ class ADXL362:
         self.spi_write_reg(0x1F, 0x52)
         time.sleep(.01)
 
-        print 'Soft reset'
+        print('Soft reset')
     
     def spi_write_reg(self, address, value):
         ''' Write value to address
