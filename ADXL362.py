@@ -59,6 +59,7 @@ class ADXL362:
     def begin_measure(self):
         ''' Turn on measurement mode, required after reset
         '''
+        self.spi.cshigh = False
         
         # Read in current value in power control register
         pc_reg = self.spi_read_reg(0x2D)
@@ -68,6 +69,8 @@ class ADXL362:
 
         # Write new power control buffer to register
         self.spi_write_reg(0x2D, pc_reg_new)
+
+        self.spi.cshigh = True
 
         time.sleep(.01)
 
